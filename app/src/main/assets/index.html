@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQLite Studio XP</title>
+<style>
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:#5a7edc;font:13px Tahoma,Verdana,Segoe UI,sans-serif;color:#000;padding:6px}
+.win{display:flex;flex-direction:column;height:100%;background:#ece9d8;border:3px solid #0831d9;border-top:0;border-radius:8px 8px 0 0;overflow:hidden}
+.title{background:linear-gradient(#0a5fe8,#0954d8 40%,#0a4fd0);color:#fff;font-weight:bold;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;text-shadow:1px 1px #0a2a8a}
+.title span.b{display:inline-block;width:20px;height:20px;border:1px solid #fff;border-radius:3px;text-align:center;line-height:17px;margin-left:3px;background:#2a6ff0}
+.title span.x{background:#d9442a}
+.menu{display:flex;gap:2px;padding:2px 4px;border-bottom:1px solid #aca899;flex-wrap:wrap}
+button,.btn{font:inherit;background:linear-gradient(#fff,#ece9d8 85%,#d6d0c0);border:1px solid #003c74;border-radius:3px;padding:5px 10px;color:#000;cursor:pointer}
+button:active,.btn:active{background:#d6d0c0}
+.menu button{border-color:transparent;background:none;padding:4px 8px}
+.menu button:active{background:#316ac5;color:#fff}
+.main{flex:1;display:flex;flex-direction:column;gap:6px;padding:6px;min-height:0}
+.tables{background:#fff;border:2px inset #fff;border-color:#7f9db9;padding:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:36px}
+.tables b{color:#003399}
+.tbtn{padding:3px 8px}
+textarea{width:100%;height:96px;font:14px Consolas,Courier New,monospace;border:1px solid #7f9db9;padding:6px;resize:vertical}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.run{background:linear-gradient(#7ad35a,#3c9a1e);color:#fff;font-weight:bold;text-shadow:1px 1px #1d5c0a}
+.grid{flex:1;min-height:0;overflow:auto;background:#fff;border:1px solid #7f9db9}
+table{border-collapse:collapse;width:max-content;min-width:100%}
+th{position:sticky;top:0;background:linear-gradient(#fff,#ece9d8);border:1px solid #aca899;padding:4px 8px;text-align:left;white-space:nowrap}
+td{border:1px solid #d8d2bd;padding:3px 8px;white-space:nowrap}
+tr:nth-child(even) td{background:#f4f7fc}
+td.n{color:#888;font-style:italic}
+.err{color:#c00;padding:8px;white-space:pre-wrap}
+.ok{padding:8px;color:#064}
+.status{background:#ece9d8;border-top:1px solid #aca899;padding:3px 8px;font-size:12px;display:flex;justify-content:space-between}
+</style></head>
+<body>
+<div class="win">
+  <div class="title"><div>&#128451; SQLite Studio XP</div><div><span class="b">_</span><span class="b">&#9633;</span><span class="b x">&times;</span></div></div>
+  <div class="menu">
+    <button id="mOpen">File: Open .db</button>
+    <button id="mSchema">Schema</button>
+    <button id="mReset">Reset</button>
+    <button id="mHelp">Help</button>
+    <input id="file" type="file" hidden>
+  </div>
+  <div class="main">
+    <div class="tables" id="tables"><b>Tables:</b></div>
+    <textarea id="sql" spellcheck="false" autocapitalize="off" autocomplete="off">SELECT * FROM students;</textarea>
+    <div class="row"><button class="run" id="run">&#9654; Run SQL</button><button id="clear">Clear</button><span id="info"></span></div>
+    <div class="grid" id="grid"><div class="ok">Loading SQLite engine...</div></div>
+  </div>
+  <div class="status"><span id="st">Starting...</span><span>SQLite (in your browser)</span></div>
+</div>
+<script src="sql-asm.js"></script>
+<script>
+var SQLm, db, $ = function(i){return document.getElementById(i)};
+var SEED = "CREATE TABLE students(id INTEGER PRIMARY KEY, name TEXT NOT NULL, class TEXT, marks INTEGER);" +
+"INSERT INTO students(name,class,marks) VALUES('Rahim','HSC-1',78),('Karim','HSC-1',85),('Nusrat','HSC-2',91),('Sumaiya','HSC-2',67),('Tanvir','HSC-1',73);" +
+"CREATE TABLE subjects(id INTEGER PRIMARY KEY, title TEXT, code INTEGER);" +
+"INSERT INTO subjects(title,code) VALUES('ICT',275),('Physics',174),('Chemistry',176);";
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function save(){try{localStorage.setItem("xpdb",JSON.stringify(Array.from(db.export())))}catch(e){}}
+function load(){try{var s=localStorage.getItem("xpdb");if(s)return new SQLm.Database(Uint8Array.from(JSON.parse(s)))}catch(e){}return null}
+function fresh(){db=new SQLm.Database();db.run(SEED);save();tables()}
+function tables(){
+  var r=db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"),box=$("tables");
+  box.innerHTML="<b>Tables:</b>";
+  (r[0]?r[0].values:[]).forEach(function(v){var b=document.createElement("button");b.className="tbtn";b.textContent="\uD83D\uDDC2 "+v[0];b.onclick=function(){$("sql").value='SELECT * FROM "'+v[0]+'";';run()};box.appendChild(b)});
+}
+function show(res){
+  var g=$("grid");
+  if(!res){g.innerHTML="";return}
+  var h="<table><tr>"+res.columns.map(function(c){return"<th>"+esc(c)+"</th>"}).join("")+"</tr>";
+  res.values.forEach(function(row){h+="<tr>"+row.map(function(c){return c===null?'<td class="n">NULL</td>':"<td>"+esc(c)+"</td>"}).join("")+"</tr>"});
+  g.innerHTML=h+"</table>";
+}
+function run(){
+  var q=$("sql").value,t=Date.now();
+  try{
+    var r=db.exec(q),ms=Date.now()-t;
+    if(r.length){var l=r[r.length-1];show(l);$("st").textContent=l.values.length+" row(s) returned";}
+    else{$("grid").innerHTML='<div class="ok">Query executed OK. Rows affected: '+db.getRowsModified()+'</div>';$("st").textContent="OK";}
+    $("info").textContent=ms+" ms";
+    tables();save();
+  }catch(e){$("grid").innerHTML='<div class="err">Error: '+esc(e.message)+'</div>';$("st").textContent="Error";$("info").textContent=""}
+}
+$("run").onclick=run;
+$("clear").onclick=function(){$("sql").value="";$("sql").focus()};
+$("sql").addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter")run()});
+$("mSchema").onclick=function(){$("sql").value="SELECT type, name, sql FROM sqlite_master;";run()};
+$("mReset").onclick=function(){if(confirm("Reset to the sample database? All changes will be lost.")){fresh();$("sql").value="SELECT * FROM students;";run()}};
+$("mHelp").onclick=function(){alert("Tap a table to browse it.\nType any SQL (CREATE, INSERT, UPDATE, DELETE, SELECT, JOIN...) and press Run.\nChanges auto-save on this device.\nFile > Open loads a .db/.sqlite file.")};
+$("mOpen").onclick=function(){$("file").click()};
+$("file").onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){try{db=new SQLm.Database(new Uint8Array(r.result));save();tables();$("sql").value="SELECT name FROM sqlite_master;";run()}catch(x){$("grid").innerHTML='<div class="err">Cannot open file: '+esc(x.message)+'</div>'}};
+  r.readAsArrayBuffer(f);
+};
+initSqlJs().then(function(S){SQLm=S;db=load();if(!db)fresh();else tables();run()}).catch(function(e){$("grid").innerHTML='<div class="err">Engine failed to load: '+esc(e&&e.message||e)+'</div>'});
+</script>
+</body></html>
