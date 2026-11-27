@@ -3,100 +3,200 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SQLite Studio XP</title>
 <style>
-:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{color-scheme:light;box-sizing:border-box}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:#5a7edc;font:13px Tahoma,Verdana,Segoe UI,sans-serif;color:#000;padding:6px}
+body{background:#5a7edc;font:13px Meiryo,"Noto Sans CJK JP","Noto Sans JP",Tahoma,Verdana,sans-serif;color:#000;padding:6px}
 .win{display:flex;flex-direction:column;height:100%;background:#ece9d8;border:3px solid #0831d9;border-top:0;border-radius:8px 8px 0 0;overflow:hidden}
-.title{background:linear-gradient(#0a5fe8,#0954d8 40%,#0a4fd0);color:#fff;font-weight:bold;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;text-shadow:1px 1px #0a2a8a}
-.title span.b{display:inline-block;width:20px;height:20px;border:1px solid #fff;border-radius:3px;text-align:center;line-height:17px;margin-left:3px;background:#2a6ff0}
-.title span.x{background:#d9442a}
-.menu{display:flex;gap:2px;padding:2px 4px;border-bottom:1px solid #aca899;flex-wrap:wrap}
-button,.btn{font:inherit;background:linear-gradient(#fff,#ece9d8 85%,#d6d0c0);border:1px solid #003c74;border-radius:3px;padding:5px 10px;color:#000;cursor:pointer}
-button:active,.btn:active{background:#d6d0c0}
-.menu button{border-color:transparent;background:none;padding:4px 8px}
+.title{background:linear-gradient(#0a5fe8,#0954d8 40%,#0a4fd0);color:#fff;font-weight:bold;padding:6px 8px;text-shadow:1px 1px #0a2a8a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu{display:flex;gap:2px;padding:2px 4px;border-bottom:1px solid #aca899;overflow-x:auto;white-space:nowrap}
+button{font:inherit;background:linear-gradient(#fff,#ece9d8 85%,#d6d0c0);border:1px solid #003c74;border-radius:3px;padding:5px 10px;color:#000}
+button:active{background:#d6d0c0}
+.menu button{border-color:transparent;background:none;padding:5px 8px;flex:none}
 .menu button:active{background:#316ac5;color:#fff}
 .main{flex:1;display:flex;flex-direction:column;gap:6px;padding:6px;min-height:0}
-.tables{background:#fff;border:2px inset #fff;border-color:#7f9db9;padding:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:36px}
-.tables b{color:#003399}
-.tbtn{padding:3px 8px}
-textarea{width:100%;height:96px;font:14px Consolas,Courier New,monospace;border:1px solid #7f9db9;padding:6px;resize:vertical}
-.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tables{background:#fff;border:2px inset #fff;border-color:#7f9db9;padding:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:36px;max-height:84px;overflow:auto}
+.tables b{color:#039}
+.tb{padding:3px 8px}
+input[type=text]{flex:1;min-width:0;font:inherit;border:1px solid #7f9db9;padding:5px}
+textarea{width:100%;height:84px;font:14px Consolas,"Courier New","Noto Sans CJK JP",monospace;border:1px solid #7f9db9;padding:6px;resize:vertical}
+.row{display:flex;gap:6px;align-items:center}
 .run{background:linear-gradient(#7ad35a,#3c9a1e);color:#fff;font-weight:bold;text-shadow:1px 1px #1d5c0a}
 .grid{flex:1;min-height:0;overflow:auto;background:#fff;border:1px solid #7f9db9}
 table{border-collapse:collapse;width:max-content;min-width:100%}
 th{position:sticky;top:0;background:linear-gradient(#fff,#ece9d8);border:1px solid #aca899;padding:4px 8px;text-align:left;white-space:nowrap}
-td{border:1px solid #d8d2bd;padding:3px 8px;white-space:nowrap}
+td{border:1px solid #d8d2bd;padding:3px 8px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 tr:nth-child(even) td{background:#f4f7fc}
+tbody tr:active td{background:#c5d7f5}
 td.n{color:#888;font-style:italic}
-.err{color:#c00;padding:8px;white-space:pre-wrap}
-.ok{padding:8px;color:#064}
-.status{background:#ece9d8;border-top:1px solid #aca899;padding:3px 8px;font-size:12px;display:flex;justify-content:space-between}
+.msg{padding:8px;white-space:pre-wrap}.err{color:#c00}.ok{color:#064}
+.status{background:#ece9d8;border-top:1px solid #aca899;padding:3px 8px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dlg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
+#dlg .box{background:#ece9d8;border:3px solid #0831d9;border-radius:6px;max-width:100%;width:520px;max-height:85%;display:flex;flex-direction:column}
+#dlg .bd{overflow:auto;padding:8px;background:#fff;margin:6px;border:1px solid #7f9db9}
+#dlg .bd div{margin-bottom:8px}#dlg .bd b{color:#039;display:block}#dlg .bd span{white-space:pre-wrap;word-break:break-word}
 </style></head>
 <body>
 <div class="win">
-  <div class="title"><div>&#128451; SQLite Studio XP</div><div><span class="b">_</span><span class="b">&#9633;</span><span class="b x">&times;</span></div></div>
+  <div class="title" id="title">SQLite Studio XP</div>
   <div class="menu">
-    <button id="mOpen">File: Open .db</button>
-    <button id="mSchema">Schema</button>
-    <button id="mReset">Reset</button>
-    <button id="mHelp">Help</button>
-    <input id="file" type="file" hidden>
+    <button id="bNew">New</button><button id="bOpen">Open DB</button><button id="bSave">Save DB</button>
+    <button id="bImp">Import CSV</button><button id="bExp">Export CSV</button><button id="bUndo">Undo</button>
+    <button id="bChk">Check</button><button id="bSch">Schema</button><button id="bHelp">Help</button>
+    <input id="fDb" type="file" hidden><input id="fCsv" type="file" accept=".csv,.txt,text/csv,text/plain" hidden>
   </div>
   <div class="main">
-    <div class="tables" id="tables"><b>Tables:</b></div>
-    <textarea id="sql" spellcheck="false" autocapitalize="off" autocomplete="off">SELECT * FROM students;</textarea>
-    <div class="row"><button class="run" id="run">&#9654; Run SQL</button><button id="clear">Clear</button><span id="info"></span></div>
-    <div class="grid" id="grid"><div class="ok">Loading SQLite engine...</div></div>
+    <div class="tables" id="tables"></div>
+    <div class="row" id="frow" style="display:none"><input type="text" id="q" placeholder="Search in table..."><button id="bGo">Search</button></div>
+    <textarea id="sql" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    <div class="row"><button class="run" id="run">&#9654; Run SQL</button><button id="clear">Clear</button></div>
+    <div class="grid" id="grid"><div class="msg ok">Loading SQLite engine...</div></div>
   </div>
-  <div class="status"><span id="st">Starting...</span><span>SQLite (in your browser)</span></div>
+  <div class="status" id="st">Starting...</div>
 </div>
+<div id="dlg"><div class="box"><div class="bd" id="dbd"></div><div style="padding:0 6px 6px;text-align:right"><button id="dclose">Close</button></div></div></div>
 <script src="sql-asm.js"></script>
 <script>
-var SQLm, db, $ = function(i){return document.getElementById(i)};
-var SEED = "CREATE TABLE students(id INTEGER PRIMARY KEY, name TEXT NOT NULL, class TEXT, marks INTEGER);" +
-"INSERT INTO students(name,class,marks) VALUES('Rahim','HSC-1',78),('Karim','HSC-1',85),('Nusrat','HSC-2',91),('Sumaiya','HSC-2',67),('Tanvir','HSC-1',73);" +
-"CREATE TABLE subjects(id INTEGER PRIMARY KEY, title TEXT, code INTEGER);" +
-"INSERT INTO subjects(title,code) VALUES('ICT',275),('Physics',174),('Chemistry',176);";
+//<<PURE
+function parseCSV(t){
+  if(t.charCodeAt(0)===0xFEFF)t=t.slice(1);
+  var rows=[],row=[],f="",q=false,i=0,n=t.length,c;
+  for(;i<n;i++){
+    c=t[i];
+    if(q){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++}else q=false } else f+=c }
+    else if(c==='"')q=true;
+    else if(c===","){row.push(f);f=""}
+    else if(c==="\n"||c==="\r"){ if(c==="\r"&&t[i+1]==="\n")i++; row.push(f);f="";rows.push(row);row=[] }
+    else f+=c;
+  }
+  if(f!==""||row.length){row.push(f);rows.push(row)}
+  return rows.filter(function(r){return !(r.length===1&&r[0]==="")});
+}
+function colTypes(rows,nc){
+  var t=[],j,i,v,isI,isR,any;
+  for(j=0;j<nc;j++){
+    isI=true;isR=true;any=false;
+    for(i=0;i<rows.length;i++){v=rows[i][j];if(v===undefined||v==="")continue;any=true;
+      if(!/^(0|-?[1-9]\d*)$/.test(v))isI=false;
+      if(!/^-?(0|[1-9]\d*)?\.?\d+$/.test(v)||/^-?0\d/.test(v))isR=false}
+    t.push(!any?"TEXT":isI?"INTEGER":isR?"REAL":"TEXT");
+  }
+  return t;
+}
+function cleanNames(h){
+  var seen={};return h.map(function(x,i){
+    var n=(x||"").trim()||("col"+(i+1)),b=n,k=1;
+    while(seen[n.toLowerCase()]){n=b+"_"+(++k)}
+    seen[n.toLowerCase()]=1;return n});
+}
+function dangerMsg(sql){
+  var p=sql.split(";"),i,s;
+  for(i=0;i<p.length;i++){s=p[i].trim();
+    if(/^drop\s/i.test(s))return "This will DELETE a table/object permanently (Undo can restore the last backup).";
+    if(/^(delete\s+from|update)\s/i.test(s)&&!/\bwhere\b/i.test(s))return "This statement has no WHERE and will change ALL rows.";}
+  return null;
+}
+//>>PURE
+var SQLm,db,backup=null,fname="database.db",dirty=false,cur=null,last=null,CAP=1000,$=function(i){return document.getElementById(i)};
+var SEED="CREATE TABLE students(id INTEGER PRIMARY KEY, name TEXT NOT NULL, class TEXT, marks INTEGER);INSERT INTO students(name,class,marks) VALUES('Rahim','HSC-1',78),('Karim','HSC-1',85),('Nusrat','HSC-2',91);";
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
-function save(){try{localStorage.setItem("xpdb",JSON.stringify(Array.from(db.export())))}catch(e){}}
-function load(){try{var s=localStorage.getItem("xpdb");if(s)return new SQLm.Database(Uint8Array.from(JSON.parse(s)))}catch(e){}return null}
-function fresh(){db=new SQLm.Database();db.run(SEED);save();tables()}
+function qi(n){return '"'+String(n).replace(/"/g,'""')+'"'}
+function status(m,bad){var s=$("st");s.textContent=m;s.style.color=bad?"#c00":"#000"}
+function title(){$("title").textContent="\uD83D\uDDC3 "+fname+(dirty?" *":"")+" - SQLite Studio XP"}
+function b64(u){var s="",i;for(i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)}
+function unb64(s){var b=atob(s),u=new Uint8Array(b.length),i;for(i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+function exp(){var d=db.export();db.run("PRAGMA foreign_keys=ON");return d}
+function open(data){db=data?new SQLm.Database(data):new SQLm.Database();db.run("PRAGMA foreign_keys=ON");db.exec("SELECT count(*) FROM sqlite_master")}
+function persist(){try{localStorage.setItem("xpdb2",b64(exp()));localStorage.setItem("xpname",fname);return true}catch(e){status("Auto-save FAILED ("+e.message+"). Use Save DB now!",true);return false}}
+function snap(){try{backup=exp()}catch(e){backup=null}}
+function changed(){dirty=true;title();persist()}
 function tables(){
-  var r=db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"),box=$("tables");
-  box.innerHTML="<b>Tables:</b>";
-  (r[0]?r[0].values:[]).forEach(function(v){var b=document.createElement("button");b.className="tbtn";b.textContent="\uD83D\uDDC2 "+v[0];b.onclick=function(){$("sql").value='SELECT * FROM "'+v[0]+'";';run()};box.appendChild(b)});
+  var r=db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"),b=$("tables");
+  b.innerHTML="<b>Tables:</b>";
+  (r[0]?r[0].values:[]).forEach(function(v){var x=document.createElement("button");x.className="tb";x.textContent="\uD83D\uDDC2 "+v[0];x.onclick=function(){browse(v[0])};b.appendChild(x)});
+}
+function browse(t){cur=t;$("frow").style.display="flex";$("q").value="";$("sql").value="SELECT * FROM "+qi(t)+";";run(true)}
+function search(){
+  if(!cur)return;var q=$("q").value;if(!q){browse(cur);return}
+  var cols=db.exec("PRAGMA table_info("+qi(cur)+")")[0].values.map(function(r){return r[1]});
+  var like="'%"+q.replace(/[\\%_]/g,"\\$&").replace(/'/g,"''")+"%' ESCAPE '\\'";
+  $("sql").value="SELECT * FROM "+qi(cur)+" WHERE "+cols.map(function(c){return qi(c)+" LIKE "+like}).join(" OR ")+";";run(true);
 }
 function show(res){
-  var g=$("grid");
-  if(!res){g.innerHTML="";return}
-  var h="<table><tr>"+res.columns.map(function(c){return"<th>"+esc(c)+"</th>"}).join("")+"</tr>";
-  res.values.forEach(function(row){h+="<tr>"+row.map(function(c){return c===null?'<td class="n">NULL</td>':"<td>"+esc(c)+"</td>"}).join("")+"</tr>"});
-  g.innerHTML=h+"</table>";
+  var g=$("grid"),n=Math.min(res.values.length,CAP),h="<table><thead><tr>",i;
+  res.columns.forEach(function(c){h+="<th>"+esc(c)+"</th>"});h+="</tr></thead><tbody>";
+  for(i=0;i<n;i++){h+='<tr data-i="'+i+'">'+res.values[i].map(function(c){return c===null?'<td class="n">NULL</td>':"<td>"+esc(c)+"</td>"}).join("")+"</tr>"}
+  g.innerHTML=h+"</tbody></table>"+(res.values.length>CAP?'<div class="msg">Showing first '+CAP+" of "+res.values.length+" rows (export CSV gets all).</div>":"");
 }
-function run(){
-  var q=$("sql").value,t=Date.now();
+$("grid").addEventListener("click",function(e){
+  var tr=e.target.closest("tr[data-i]");if(!tr||!last)return;
+  var v=last.values[+tr.dataset.i],h="";
+  last.columns.forEach(function(c,j){h+="<div><b>"+esc(c)+"</b><span>"+(v[j]===null?"NULL":esc(v[j]))+"</span></div>"});
+  $("dbd").innerHTML=h;$("dlg").style.display="flex";
+});
+$("dclose").onclick=function(){$("dlg").style.display="none"};
+function run(fromBrowse){
+  var q=$("sql").value,w=/\b(insert|update|delete|drop|create|alter|replace)\b/i.test(q);
+  if(!fromBrowse)cur=null,$("frow").style.display="none";
+  var d=dangerMsg(q);if(d&&!confirm(d+"\n\nRun anyway?"))return;
+  if(w)snap();
+  var t=Date.now();
   try{
-    var r=db.exec(q),ms=Date.now()-t;
-    if(r.length){var l=r[r.length-1];show(l);$("st").textContent=l.values.length+" row(s) returned";}
-    else{$("grid").innerHTML='<div class="ok">Query executed OK. Rows affected: '+db.getRowsModified()+'</div>';$("st").textContent="OK";}
-    $("info").textContent=ms+" ms";
-    tables();save();
-  }catch(e){$("grid").innerHTML='<div class="err">Error: '+esc(e.message)+'</div>';$("st").textContent="Error";$("info").textContent=""}
+    var r=db.exec(q);
+    if(r.length){last=r[r.length-1];show(last);status(last.values.length+" row(s) - "+(Date.now()-t)+" ms")}
+    else{last=null;$("grid").innerHTML='<div class="msg ok">Query OK. Rows affected: '+db.getRowsModified()+"</div>";status("OK - "+(Date.now()-t)+" ms")}
+    if(w){changed()}
+    tables();
+  }catch(e){$("grid").innerHTML='<div class="msg err">Error: '+esc(e.message)+"</div>";status("Error",true)}
 }
-$("run").onclick=run;
+function send(name,bytes,mime){
+  if(window.Android&&Android.saveFile){Android.saveFile(name,b64(bytes),mime);return}
+  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([bytes],{type:mime}));a.download=name;a.click();
+}
+function saveDb(){try{send(fname,exp(),"application/octet-stream");dirty=false;title();status("Save requested: "+fname)}catch(e){status("Save FAILED: "+e.message,true)}}
+function exportCsv(){
+  if(!last){alert("Run a query or open a table first, then Export CSV.");return}
+  var L=function(v){v=v===null?"":String(v);return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  var out="\uFEFF"+last.columns.map(L).join(",")+"\r\n"+last.values.map(function(r){return r.map(L).join(",")}).join("\r\n")+"\r\n";
+  try{send((cur||"query")+".csv",new TextEncoder().encode(out),"text/csv");status("Exporting "+last.values.length+" rows to CSV")}catch(e){status("Export FAILED: "+e.message,true)}
+}
+function importCsv(text,file){
+  var rows=parseCSV(text);if(rows.length<1){alert("CSV is empty.");return}
+  var hasH=confirm("Is the first row the column names?\nOK = yes, Cancel = no"),head,data;
+  if(hasH){head=rows[0];data=rows.slice(1)}else{head=rows[0].map(function(_,i){return "col"+(i+1)});data=rows}
+  var nc=head.length,names=cleanNames(head),types=colTypes(data,nc),i,j;
+  var tn=prompt("Table name:",file.replace(/\.[^.]*$/,"").replace(/[^\w\u3040-\u9fff]+/g,"_")||"imported");if(!tn)return;
+  var ex=db.exec("SELECT 1 FROM sqlite_master WHERE type='table' AND lower(name)=lower("+"'"+tn.replace(/'/g,"''")+"')").length;
+  if(ex&&!confirm('Table "'+tn+'" exists. Replace it?'))return;
+  var pk=-1;if(/^id$/i.test(names[0])&&types[0]==="INTEGER"){var s={},u=true;for(i=0;i<data.length;i++){var v=data[i][0];if(v===""||s[v]){u=false;break}s[v]=1}if(u)pk=0}
+  snap();
+  try{
+    db.run("BEGIN");
+    if(ex)db.run("DROP TABLE "+qi(tn));
+    db.run("CREATE TABLE "+qi(tn)+"("+names.map(function(n,k){return qi(n)+" "+types[k]+(k===pk?" PRIMARY KEY":"")}).join(",")+")");
+    var st=db.prepare("INSERT INTO "+qi(tn)+" VALUES("+names.map(function(){return "?"}).join(",")+")");
+    for(i=0;i<data.length;i++){var r=[];for(j=0;j<nc;j++){var x=data[i][j];r.push(x===undefined||x===""?null:(types[j]==="TEXT"?x:Number(x)))}st.run(r)}
+    st.free();db.run("COMMIT");
+    changed();tables();browse(tn);status("Imported "+data.length+" rows into "+tn);
+  }catch(e){try{db.run("ROLLBACK")}catch(_){}$("grid").innerHTML='<div class="msg err">Import failed: '+esc(e.message)+"</div>";status("Import FAILED",true)}
+}
+$("run").onclick=function(){run(false)};
 $("clear").onclick=function(){$("sql").value="";$("sql").focus()};
-$("sql").addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter")run()});
-$("mSchema").onclick=function(){$("sql").value="SELECT type, name, sql FROM sqlite_master;";run()};
-$("mReset").onclick=function(){if(confirm("Reset to the sample database? All changes will be lost.")){fresh();$("sql").value="SELECT * FROM students;";run()}};
-$("mHelp").onclick=function(){alert("Tap a table to browse it.\nType any SQL (CREATE, INSERT, UPDATE, DELETE, SELECT, JOIN...) and press Run.\nChanges auto-save on this device.\nFile > Open loads a .db/.sqlite file.")};
-$("mOpen").onclick=function(){$("file").click()};
-$("file").onchange=function(e){
-  var f=e.target.files[0];if(!f)return;
-  var r=new FileReader();
-  r.onload=function(){try{db=new SQLm.Database(new Uint8Array(r.result));save();tables();$("sql").value="SELECT name FROM sqlite_master;";run()}catch(x){$("grid").innerHTML='<div class="err">Cannot open file: '+esc(x.message)+'</div>'}};
-  r.readAsArrayBuffer(f);
-};
-initSqlJs().then(function(S){SQLm=S;db=load();if(!db)fresh();else tables();run()}).catch(function(e){$("grid").innerHTML='<div class="err">Engine failed to load: '+esc(e&&e.message||e)+'</div>'});
+$("bGo").onclick=search;$("q").addEventListener("keydown",function(e){if(e.key==="Enter")search()});
+$("sql").addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter")run(false)});
+$("bSch").onclick=function(){$("sql").value="SELECT type, name, sql FROM sqlite_master;";run(false)};
+$("bChk").onclick=function(){$("sql").value="PRAGMA integrity_check;";run(false)};
+$("bNew").onclick=function(){if(dirty&&!confirm("Unsaved changes will be lost (Undo is not available after New). Continue?"))return;snap();open();fname="new.db";dirty=false;cur=null;last=null;$("grid").innerHTML='<div class="msg ok">New empty database. Use Import CSV or write CREATE TABLE.</div>';title();persist();tables()};
+$("bUndo").onclick=function(){if(!backup){alert("Nothing to undo yet.");return}if(!confirm("Restore the database to before the last change?"))return;open(backup);backup=null;changed();tables();cur=null;last=null;$("grid").innerHTML='<div class="msg ok">Restored the previous state.</div>';status("Undo done")};
+$("bSave").onclick=saveDb;$("bExp").onclick=exportCsv;
+$("bHelp").onclick=function(){alert("Tap a table to browse; tap a row to read it fully.\nImport CSV: UTF-8 files (Japanese OK).\nSave DB: saves a .db file to your phone.\nExport CSV: exports the last result.\nUndo: restores the state before the last change.\nAuto-save keeps your work inside the app, but always use Save DB for backups.")};
+$("bOpen").onclick=function(){$("fDb").click()};$("bImp").onclick=function(){$("fCsv").click()};
+$("fDb").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{snap();open(new Uint8Array(r.result));fname=f.name;dirty=false;cur=null;last=null;title();persist();tables();$("sql").value="SELECT name FROM sqlite_master;";run(false)}catch(x){status("Cannot open: not a valid SQLite file",true);$("grid").innerHTML='<div class="msg err">Cannot open file: '+esc(x.message)+"</div>"}};r.readAsArrayBuffer(f);e.target.value=""};
+$("fCsv").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){importCsv(r.result,f.name)};r.readAsText(f,"UTF-8");e.target.value=""};
+initSqlJs().then(function(S){
+  SQLm=S;var s=null;try{s=localStorage.getItem("xpdb2");fname=localStorage.getItem("xpname")||fname}catch(e){}
+  try{open(s?unb64(s):null);if(!s){db.run(SEED);persist()}}catch(e){open();db.run(SEED)}
+  title();tables();$("sql").value="SELECT * FROM "+(db.exec("SELECT name FROM sqlite_master WHERE type='table' LIMIT 1")[0]?'"'+db.exec("SELECT name FROM sqlite_master WHERE type='table' LIMIT 1")[0].values[0][0]+'"':"sqlite_master")+";";run(false);
+}).catch(function(e){$("grid").innerHTML='<div class="msg err">Engine failed to load: '+esc(e&&e.message||e)+"</div>"});
 </script>
 </body></html>
